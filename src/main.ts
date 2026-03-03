@@ -49,6 +49,7 @@ import { AgentCenter } from './core/agent-center.js'
 import { ProviderRouter } from './core/ai-provider.js'
 import { VercelAIProvider } from './ai-providers/vercel-ai-sdk/vercel-provider.js'
 import { ClaudeCodeProvider } from './ai-providers/claude-code/claude-code-provider.js'
+import { CodexCliProvider } from './ai-providers/codex-cli/codex-cli-provider.js'
 import { createEventLog } from './core/event-log.js'
 import { createCronEngine, createCronListener, createCronTools } from './task/cron/index.js'
 import { createHeartbeat } from './task/heartbeat/index.js'
@@ -260,7 +261,8 @@ async function main() {
     config.compaction,
   )
   const claudeCodeProvider = new ClaudeCodeProvider(config.compaction, instructions)
-  const router = new ProviderRouter(vercelProvider, claudeCodeProvider)
+  const codexCliProvider = new CodexCliProvider(config.compaction, instructions)
+  const router = new ProviderRouter(vercelProvider, claudeCodeProvider, codexCliProvider)
 
   const agentCenter = new AgentCenter(router)
   const engine = new Engine({ agentCenter })
