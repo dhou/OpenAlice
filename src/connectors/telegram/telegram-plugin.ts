@@ -18,6 +18,7 @@ const MAX_MESSAGE_LENGTH = 4096
 const BACKEND_LABELS: Record<AIBackend, string> = {
   'claude-code': 'Claude Code',
   'vercel-ai-sdk': 'Vercel AI SDK',
+  'codex-cli': 'Codex CLI',
 }
 
 export class TelegramPlugin implements Plugin {
@@ -110,9 +111,11 @@ export class TelegramPlugin implements Plugin {
 
           // Edit the original settings message in-place
           const ccLabel = backend === 'claude-code' ? '> Claude Code' : 'Claude Code'
+          const codexLabel = backend === 'codex-cli' ? '> Codex CLI' : 'Codex CLI'
           const aiLabel = backend === 'vercel-ai-sdk' ? '> Vercel AI SDK' : 'Vercel AI SDK'
           const keyboard = new InlineKeyboard()
             .text(ccLabel, 'provider:claude-code')
+            .text(codexLabel, 'provider:codex-cli')
             .text(aiLabel, 'provider:vercel-ai-sdk')
           await ctx.editMessageText(
             `Current provider: ${BACKEND_LABELS[backend]}\n\nChoose default AI provider:`,
@@ -265,7 +268,7 @@ export class TelegramPlugin implements Plugin {
       const stopTyping = this.startTypingIndicator(message.chatId)
 
       try {
-        // Route through unified provider (Engine → ProviderRouter → Vercel or Claude Code)
+        // Route through unified provider (Engine → ProviderRouter → selected backend)
         const session = await this.getSession(message.from.id)
         const result = await engineCtx.engine.askWithSession(prompt, session, {
           historyPreamble: 'The following is the recent conversation from this Telegram chat. Use it as context if the user references earlier messages.',
@@ -319,10 +322,12 @@ export class TelegramPlugin implements Plugin {
   private async sendSettingsMenu(chatId: number) {
     const aiConfig = await readAIConfig()
     const ccLabel = aiConfig.backend === 'claude-code' ? '> Claude Code' : 'Claude Code'
+    const codexLabel = aiConfig.backend === 'codex-cli' ? '> Codex CLI' : 'Codex CLI'
     const aiLabel = aiConfig.backend === 'vercel-ai-sdk' ? '> Vercel AI SDK' : 'Vercel AI SDK'
 
     const keyboard = new InlineKeyboard()
       .text(ccLabel, 'provider:claude-code')
+      .text(codexLabel, 'provider:codex-cli')
       .text(aiLabel, 'provider:vercel-ai-sdk')
 
     await this.bot!.api.sendMessage(

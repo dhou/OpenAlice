@@ -35,6 +35,12 @@ const SDK_FORMATS = [
   { value: 'google', label: 'Google Compatible' },
 ]
 
+const BACKENDS = [
+  { value: 'claude-code', label: 'Claude Code' },
+  { value: 'codex-cli', label: 'Codex CLI' },
+  { value: 'vercel-ai-sdk', label: 'Vercel AI SDK' },
+] as const
+
 /** Detect whether saved config should show as "Custom" in the UI. */
 function detectCustomMode(provider: string, model: string): boolean {
   const presets = PROVIDER_MODELS[provider]
@@ -74,19 +80,19 @@ export function AIProviderPage() {
         {config && (
           <div className="max-w-[640px] space-y-8">
             {/* Backend */}
-            <Section id="backend" title="Backend" description="Runtime switch between AI backends. Claude Code calls the local CLI; Vercel AI SDK calls the API directly. Changes take effect immediately.">
+            <Section id="backend" title="Backend" description="Runtime switch between AI backends. Claude Code and Codex CLI call local CLIs with existing local login; Vercel AI SDK calls APIs directly. Changes take effect immediately.">
               <div className="flex border border-border rounded-lg overflow-hidden">
-                {(['claude-code', 'vercel-ai-sdk'] as const).map((b) => (
+                {BACKENDS.map((b, i) => (
                   <button
-                    key={b}
-                    onClick={() => handleBackendSwitch(b)}
+                    key={b.value}
+                    onClick={() => handleBackendSwitch(b.value)}
                     className={`flex-1 py-2 px-3 text-[13px] font-medium transition-colors ${
-                      config.aiProvider.backend === b
+                      config.aiProvider.backend === b.value
                         ? 'bg-accent-dim text-accent'
                         : 'bg-bg text-text-muted hover:bg-bg-tertiary hover:text-text'
-                    } ${b === 'vercel-ai-sdk' ? 'border-l border-border' : ''}`}
+                    } ${i > 0 ? 'border-l border-border' : ''}`}
                   >
-                    {b === 'claude-code' ? 'Claude Code' : 'Vercel AI SDK'}
+                    {b.label}
                   </button>
                 ))}
               </div>

@@ -116,7 +116,7 @@ graph LR
   MCP --> E
 ```
 
-**Providers** — interchangeable AI backends. Claude Code spawns `claude -p` as a subprocess; Vercel AI SDK runs a `ToolLoopAgent` in-process. `ProviderRouter` reads `ai-provider.json` on each call to select the active backend at runtime.
+**Providers** — interchangeable AI backends. Claude Code spawns `claude -p` as a subprocess, Codex CLI spawns `codex exec`, and Vercel AI SDK runs a `ToolLoopAgent` in-process. `ProviderRouter` reads `ai-provider.json` on each call to select the active backend at runtime.
 
 **Core** — `Engine` is a thin facade that delegates to `AgentCenter`, which routes all calls (both stateless and session-aware) through `ProviderRouter`. `ToolCenter` is a centralized tool registry — extensions register tools there, and it exports them in Vercel AI SDK and MCP formats. `EventLog` provides persistent append-only event storage (JSONL) with real-time subscriptions and crash recovery. `ConnectorRegistry` tracks which channel the user last spoke through.
 
@@ -152,7 +152,7 @@ pnpm test       # run tests
 
 All config lives in `data/config/` as JSON files with Zod validation. Missing files fall back to sensible defaults. You can edit these files directly or use the Web UI.
 
-**AI Provider** — The default provider is Claude Code (`claude -p` subprocess). To use the [Vercel AI SDK](https://sdk.vercel.ai/docs) instead (Anthropic, OpenAI, Google, etc.), switch `ai-provider.json` to `vercel-ai-sdk` and add your API key to `api-keys.json`.
+**AI Provider** — The default provider is Claude Code (`claude -p` subprocess). You can also switch to Codex CLI (`codex exec`) or [Vercel AI SDK](https://sdk.vercel.ai/docs) mode (`vercel-ai-sdk`, for Anthropic/OpenAI/Google API calls).
 
 **Trading** — Multi-account architecture. Crypto via [CCXT](https://docs.ccxt.com/) (Bybit, OKX, Binance, etc.) configured in `crypto.json`. US equities via [Alpaca](https://alpaca.markets/) configured in `securities.json`. Both use the same git-like trading workflow.
 
@@ -161,7 +161,7 @@ All config lives in `data/config/` as JSON files with Zod validation. Missing fi
 | `engine.json` | Trading pairs, tick interval, timeframe |
 | `model.json` | AI model provider and model name |
 | `agent.json` | Max agent steps, evolution mode toggle, Claude Code tool permissions |
-| `ai-provider.json` | Active AI provider (`vercel-ai-sdk` or `claude-code`), switchable at runtime |
+| `ai-provider.json` | Active AI provider (`claude-code`, `codex-cli`, or `vercel-ai-sdk`), switchable at runtime |
 | `api-keys.json` | AI provider API keys (Anthropic, OpenAI, Google) — only needed for Vercel AI SDK mode |
 | `crypto.json` | CCXT exchange config + API keys, allowed symbols, guards |
 | `securities.json` | Alpaca broker config + API keys, allowed symbols, guards |

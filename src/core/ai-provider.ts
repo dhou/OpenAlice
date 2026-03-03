@@ -1,7 +1,7 @@
 /**
  * AIProvider — unified abstraction over AI backends.
  *
- * Each provider (Vercel AI SDK, Claude Code CLI, …) implements this interface
+ * Each provider (Vercel AI SDK, Claude Code CLI, Codex CLI, …) implements this interface
  * with its own session management flow.  ProviderRouter reads the runtime
  * config and delegates to the correct implementation.
  */
@@ -13,11 +13,11 @@ import { readAIProviderConfig } from './config.js'
 // ==================== Types ====================
 
 export interface AskOptions {
-  /** Preamble text inside <chat_history> block (Claude Code only). */
+  /** Preamble text inside <chat_history> block (CLI providers only). */
   historyPreamble?: string
-  /** System prompt override (Claude Code only). */
+  /** System prompt override (CLI providers only). */
   systemPrompt?: string
-  /** Max text history entries in <chat_history>. Default: 50 (Claude Code only). */
+  /** Max text history entries in <chat_history>. Default: 50 (CLI providers only). */
   maxHistoryEntries?: number
 }
 
@@ -41,12 +41,16 @@ export class ProviderRouter implements AIProvider {
   constructor(
     private vercel: AIProvider,
     private claudeCode: AIProvider | null,
+    private codexCli: AIProvider | null,
   ) {}
 
   async ask(prompt: string): Promise<ProviderResult> {
     const config = await readAIProviderConfig()
     if (config.backend === 'claude-code' && this.claudeCode) {
       return this.claudeCode.ask(prompt)
+    }
+    if (config.backend === 'codex-cli' && this.codexCli) {
+      return this.codexCli.ask(prompt)
     }
     return this.vercel.ask(prompt)
   }
@@ -55,6 +59,9 @@ export class ProviderRouter implements AIProvider {
     const config = await readAIProviderConfig()
     if (config.backend === 'claude-code' && this.claudeCode) {
       return this.claudeCode.askWithSession(prompt, session, opts)
+    }
+    if (config.backend === 'codex-cli' && this.codexCli) {
+      return this.codexCli.askWithSession(prompt, session, opts)
     }
     return this.vercel.askWithSession(prompt, session, opts)
   }
