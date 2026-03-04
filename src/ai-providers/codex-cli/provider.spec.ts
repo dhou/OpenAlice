@@ -130,4 +130,30 @@ describe('askCodexCli', () => {
     expect(result.text).toContain('turn failed')
     expect(result.text).toContain('boom')
   })
+
+  it('passes system prompt via developer_instructions config', async () => {
+    spawnMock.mockImplementation(() => {
+      const child = makeChild()
+      setTimeout(() => {
+        child.emit('close', 0)
+      }, 0)
+      return child
+    })
+
+    await askCodexCli('hello', {
+      systemPrompt: 'You are helpful',
+      appendSystemPrompt: 'Prefer concise responses.',
+    })
+
+    const call = spawnMock.mock.calls[0]
+    expect(call?.[0]).toBe('codex')
+    const args = call?.[1] as string[]
+    const configIdx = args.indexOf('-c')
+    expect(configIdx).toBeGreaterThanOrEqual(0)
+    const configArg = args[configIdx + 1]
+    expect(configArg.startsWith('developer_instructions=')).toBe(true)
+    const value = configArg.slice('developer_instructions='.length)
+    expect(JSON.parse(value)).toBe('You are helpful\n\nPrefer concise responses.')
+    expect(args.at(-1)).toBe('hello')
+  })
 })

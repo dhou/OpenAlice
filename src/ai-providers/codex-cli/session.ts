@@ -11,7 +11,7 @@ export interface CodexCliSessionConfig {
   codexCli: CodexCliConfig
   /** Compaction config for auto-summarization. */
   compaction: CompactionConfig
-  /** Optional system prompt inserted before chat history. */
+  /** Optional instructions forwarded to Codex CLI via `developer_instructions`. */
   systemPrompt?: string
   /** Max text history entries to include in <chat_history>. Default: 50. */
   maxHistoryEntries?: number
@@ -59,13 +59,6 @@ export async function askCodexCliWithSession(
   // 4. Construct full prompt
   const promptParts: string[] = []
 
-  if (config.systemPrompt) {
-    promptParts.push('<system_prompt>')
-    promptParts.push(config.systemPrompt)
-    promptParts.push('</system_prompt>')
-    promptParts.push('')
-  }
-
   if (textHistory.length > 0) {
     const lines = textHistory.map((entry) => {
       const tag = entry.role === 'user' ? 'User' : 'Bot'
@@ -83,7 +76,10 @@ export async function askCodexCliWithSession(
   const fullPrompt = promptParts.join('\n')
 
   // 5. Run Codex CLI
-  const result = await askCodexCli(fullPrompt, config.codexCli)
+  const result = await askCodexCli(fullPrompt, {
+    ...config.codexCli,
+    systemPrompt: config.systemPrompt,
+  })
 
   // 6. Persist intermediate messages (tool calls + results)
   for (const msg of result.messages) {
