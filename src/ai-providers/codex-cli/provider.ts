@@ -14,22 +14,17 @@ const logger = pino({
 
 const DEFAULT_SANDBOX: CodexSandboxMode = 'workspace-write'
 
-function injectSystemPrompt(prompt: string, systemPrompt?: string, appendSystemPrompt?: string): string {
-  if (!systemPrompt && !appendSystemPrompt) return prompt
+function buildDeveloperInstructions(systemPrompt?: string, appendSystemPrompt?: string): string | undefined {
+  const parts = [systemPrompt, appendSystemPrompt].filter(
+    (part): part is string => typeof part === 'string' && part.trim().length > 0,
+  )
+  if (parts.length === 0) return undefined
+  return parts.join('\n\n')
+}
 
-  const lines: string[] = []
-  if (systemPrompt) {
-    lines.push('System instructions:')
-    lines.push(systemPrompt)
-    lines.push('')
-  }
-  if (appendSystemPrompt) {
-    lines.push('Additional instructions:')
-    lines.push(appendSystemPrompt)
-    lines.push('')
-  }
-  lines.push(prompt)
-  return lines.join('\n')
+function toTomlString(value: string): string {
+  // JSON string literal syntax is valid TOML basic string syntax.
+  return JSON.stringify(value)
 }
 
 function parseJsonMaybe(raw: unknown): unknown {
@@ -83,7 +78,7 @@ export async function askCodexCli(
     onToolResult,
   } = config
 
-  const finalPrompt = injectSystemPrompt(prompt, systemPrompt, appendSystemPrompt)
+  const developerInstructions = buildDeveloperInstructions(systemPrompt, appendSystemPrompt)
   const tempDir = await mkdtemp(join(tmpdir(), 'openalice-codex-'))
   const outputFile = join(tempDir, 'last-message.txt')
 
@@ -103,7 +98,11 @@ export async function askCodexCli(
     args.push('--profile', profile)
   }
 
-  args.push(finalPrompt)
+  if (developerInstructions) {
+    args.push('-c', `developer_instructions=${toTomlString(developerInstructions)}`)
+  }
+
+  args.push(prompt)
 
   try {
     return await new Promise<CodexCliResult>((resolve, reject) => {

@@ -78,7 +78,13 @@ describe('askCodexCliWithSession', () => {
     })
 
     expect(session.appendUser).toHaveBeenNthCalledWith(1, 'hello', 'human')
-    expect(askCodexCli).toHaveBeenCalledWith(expect.stringContaining('hello'), expect.objectContaining({ sandbox: 'read-only' }))
+    expect(askCodexCli).toHaveBeenCalledWith(
+      expect.stringContaining('hello'),
+      expect.objectContaining({
+        sandbox: 'read-only',
+        systemPrompt: 'You are helpful',
+      }),
+    )
     expect(session.appendAssistant).toHaveBeenCalledWith(
       [{ type: 'tool_use', id: 'call-1', name: 'Read', input: { path: 'a.txt' } }],
       'codex-cli',

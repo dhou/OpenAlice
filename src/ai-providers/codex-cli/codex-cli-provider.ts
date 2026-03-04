@@ -26,7 +26,10 @@ export class CodexCliProvider implements AIProvider {
 
   async ask(prompt: string): Promise<ProviderResult> {
     const config = await this.resolveConfig()
-    const result = await askCodexCli(prompt, config)
+    const result = await askCodexCli(prompt, {
+      ...config,
+      systemPrompt: this.systemPrompt,
+    })
     return { text: result.text, media: result.media }
   }
 

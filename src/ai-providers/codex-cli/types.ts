@@ -14,9 +14,9 @@ export interface CodexCliConfig {
   model?: string
   /** Optional Codex profile name from ~/.codex/config.toml. */
   profile?: string
-  /** Optional system prompt text; injected into the user prompt body. */
+  /** Optional instructions forwarded to Codex CLI via `developer_instructions`. */
   systemPrompt?: string
-  /** Extra system text appended after systemPrompt and before user prompt. */
+  /** Extra instructions appended to `systemPrompt` in `developer_instructions`. */
   appendSystemPrompt?: string
   /** Called for each parsed function call output payload. */
   onToolResult?: (toolResult: { toolUseId: string; content: string }) => void
