@@ -533,6 +533,8 @@ async function main() {
       'trading-ccxt',
     )
     console.log('ccxt: provider tools registered')
+  }).catch((err) => {
+    console.error('ccxt: background init failed:', err instanceof Error ? err.message : String(err))
   })
 
   // ==================== Shutdown ====================
