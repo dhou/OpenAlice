@@ -165,10 +165,9 @@ export class AgentCenter {
       }
     }
 
-    // Flush any remaining intermediate blocks
-    if (currentAssistantBlocks.length > 0) {
-      intermediateMessages.push({ role: 'assistant', content: currentAssistantBlocks })
-    }
+    // Flush any remaining user blocks (defensive — tool_result already flushes)
+    // NOTE: Do NOT flush trailing assistant text blocks here — the authoritative
+    // final text comes from the done event and is persisted once in step 8.
     if (currentUserBlocks.length > 0) {
       intermediateMessages.push({ role: 'user', content: currentUserBlocks })
     }

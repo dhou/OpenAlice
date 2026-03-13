@@ -309,7 +309,7 @@ describe('AgentCenter — session persistence', () => {
     )
   })
 
-  it('A12: multiple consecutive text events all buffered in intermediate flush', async () => {
+  it('A12: multiple consecutive text events persisted once via final result', async () => {
     const provider = new FakeProvider([
       textEvent('first '),
       textEvent('second '),
@@ -323,19 +323,9 @@ describe('AgentCenter — session persistence', () => {
 
     const assistantWrites = session.writes.filter(w => w.method === 'appendAssistant')
 
-    const intermediateFlush = assistantWrites.find(w => {
-      const content = w.content as ContentBlock[]
-      return Array.isArray(content) && content.filter(b => b.type === 'text').length === 3
-    })
-    expect(intermediateFlush).toBeDefined()
-    expect(intermediateFlush!.content).toEqual([
-      { type: 'text', text: 'first ' },
-      { type: 'text', text: 'second ' },
-      { type: 'text', text: 'third' },
-    ])
-
-    const finalWrite = assistantWrites[assistantWrites.length - 1]
-    expect(finalWrite.content).toEqual([{ type: 'text', text: 'first second third' }])
+    // Only one assistant write — the authoritative final text (no duplicate intermediate flush)
+    expect(assistantWrites).toHaveLength(1)
+    expect(assistantWrites[0].content).toEqual([{ type: 'text', text: 'first second third' }])
   })
 
   it('A13: tool_use with complex nested input preserves structure', async () => {
