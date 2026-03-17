@@ -13,5 +13,6 @@ export default defineConfig({
   test: {
     include: ['src/**/*.e2e.spec.*'],
     testTimeout: 60_000,
+    fileParallelism: false,  // e2e tests share exchange APIs — run sequentially
   },
 })
