@@ -40,6 +40,7 @@ import { ToolCenter } from './core/tool-center.js'
 import { AgentCenter } from './core/agent-center.js'
 import { GenerateRouter } from './core/ai-provider-manager.js'
 import { VercelAIProvider } from './ai-providers/vercel-ai-sdk/vercel-provider.js'
+import { CodexCliProvider } from './ai-providers/codex-cli/codex-cli-provider.js'
 import { AgentSdkProvider } from './ai-providers/agent-sdk/agent-sdk-provider.js'
 import { createEventLog } from './core/event-log.js'
 import { createToolCallLog } from './core/tool-call-log.js'
@@ -264,11 +265,12 @@ async function main() {
     instructions,
     config.agent.maxSteps,
   )
+  const codexCliProvider = new CodexCliProvider(config.compaction, instructions)
   const agentSdkProvider = new AgentSdkProvider(
     () => toolCenter.getVercelTools(),
     instructions,
   )
-  const router = new GenerateRouter(vercelProvider, agentSdkProvider)
+  const router = new GenerateRouter(vercelProvider, codexCliProvider, agentSdkProvider)
 
   const agentCenter = new AgentCenter({
     router,

@@ -54,7 +54,7 @@ export function createChannelsRoutes({ sessions, sseByChannel }: ChannelsDeps) {
       id: body.id,
       label: body.label.trim(),
       ...(body.systemPrompt ? { systemPrompt: body.systemPrompt } : {}),
-      ...(body.provider === 'claude-code' || body.provider === 'vercel-ai-sdk' || body.provider === 'agent-sdk'
+      ...(body.provider === 'claude-code' || body.provider === 'vercel-ai-sdk' || body.provider === 'codex-cli' || body.provider === 'agent-sdk'
         ? { provider: body.provider }
         : {}),
       ...(body.vercelAiSdk?.provider && body.vercelAiSdk?.model
@@ -97,7 +97,7 @@ export function createChannelsRoutes({ sessions, sseByChannel }: ChannelsDeps) {
       ...existing[idx],
       ...(body.label !== undefined ? { label: body.label } : {}),
       ...(body.systemPrompt !== undefined ? { systemPrompt: body.systemPrompt || undefined } : {}),
-      ...(body.provider === 'claude-code' || body.provider === 'vercel-ai-sdk' || body.provider === 'agent-sdk'
+      ...(body.provider === 'claude-code' || body.provider === 'vercel-ai-sdk' || body.provider === 'codex-cli' || body.provider === 'agent-sdk'
         ? { provider: body.provider }
         : body.provider === null || body.provider === ''
           ? { provider: undefined }

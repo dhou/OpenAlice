@@ -102,13 +102,20 @@ export function AIProviderPage() {
           <div className="max-w-[880px] mx-auto">
             {/* Backend */}
             <ConfigSection title="Backend" description="Changes take effect immediately.">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <BackendCard
+                  selected={config.aiProvider.backend === 'codex-cli'}
+                  onClick={() => handleBackendSwitch('codex-cli')}
+                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 9l-4 3 4 3" /><path d="M16 9l4 3-4 3" /><path d="M14 5l-4 14" /></svg>}
+                  title="Codex CLI"
+                  description="Local Codex CLI workflow with full tool access"
+                />
                 <BackendCard
                   selected={config.aiProvider.backend === 'agent-sdk'}
                   onClick={() => handleBackendSwitch('agent-sdk')}
                   icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a4 4 0 0 1 4 4v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V6a4 4 0 0 1 4-4z" /><path d="M8 8v2a4 4 0 0 0 8 0V8" /><path d="M12 14v4" /><path d="M8 22h8" /><circle cx="9" cy="5.5" r="0.5" fill="currentColor" stroke="none" /><circle cx="15" cy="5.5" r="0.5" fill="currentColor" stroke="none" /></svg>}
                   title="Claude"
-                  description="Local Claude Code login with full tool access"
+                  description="Local Claude Code login via Agent SDK"
                 />
                 <BackendCard
                   selected={config.aiProvider.backend === 'vercel-ai-sdk'}

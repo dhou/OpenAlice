@@ -109,7 +109,7 @@ export interface AskOptions {
    * AI provider to use for this call, overriding the global ai-provider-manager.json config.
    * Falls back to global config if not specified.
    */
-  provider?: 'claude-code' | 'vercel-ai-sdk' | 'agent-sdk'
+  provider?: 'claude-code' | 'vercel-ai-sdk' | 'codex-cli' | 'agent-sdk'
   /**
    * Vercel AI SDK model override — per-request provider/model/baseUrl/apiKey.
    * Only used when the active backend is 'vercel-ai-sdk'.
@@ -137,6 +137,7 @@ export interface AskOptions {
 export class GenerateRouter {
   constructor(
     private vercel: AIProvider,
+    private codexCli: AIProvider | null = null,
     private agentSdk: AIProvider | null = null,
   ) {}
 
@@ -144,10 +145,12 @@ export class GenerateRouter {
   async resolve(override?: string): Promise<AIProvider> {
     // 'claude-code' is a legacy alias for 'agent-sdk'
     if ((override === 'agent-sdk' || override === 'claude-code') && this.agentSdk) return this.agentSdk
+    if (override === 'codex-cli' && this.codexCli) return this.codexCli
     if (override === 'vercel-ai-sdk') return this.vercel
 
     const config = await readAIProviderConfig()
     if ((config.backend === 'agent-sdk' || config.backend === 'claude-code') && this.agentSdk) return this.agentSdk
+    if (config.backend === 'codex-cli' && this.codexCli) return this.codexCli
     return this.vercel
   }
 

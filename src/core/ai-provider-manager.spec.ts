@@ -1,6 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
-import { StreamableResult, type ProviderEvent, type ProviderResult, GenerateRouter, type AIProvider } from './ai-provider-manager.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { StreamableResult, type ProviderEvent, GenerateRouter, type AIProvider } from './ai-provider-manager.js'
 import { createChannel } from './async-channel.js'
+import { readAIProviderConfig } from './config.js'
+
+vi.mock('./config.js', () => ({
+  readAIProviderConfig: vi.fn(),
+}))
 
 // ==================== Helpers ====================
 
@@ -130,6 +135,10 @@ describe('StreamableResult', () => {
 // ==================== GenerateRouter ====================
 
 describe('GenerateRouter', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   function makeProvider(tag: AIProvider['providerTag']): AIProvider {
     return {
       providerTag: tag,
@@ -138,9 +147,20 @@ describe('GenerateRouter', () => {
     }
   }
 
-  it('should resolve to vercel when no override and config fallback', async () => {
+  it('dispatches to codex-cli from config when selected', async () => {
+    vi.mocked(readAIProviderConfig).mockResolvedValue({ backend: 'codex-cli' } as Awaited<ReturnType<typeof readAIProviderConfig>>)
     const vercel = makeProvider('vercel-ai')
-    const router = new GenerateRouter(vercel, null)
+    const codex = makeProvider('codex-cli')
+    const router = new GenerateRouter(vercel, codex)
+
+    const provider = await router.resolve()
+    expect(provider).toBe(codex)
+  })
+
+  it('should resolve to vercel when no override and config fallback', async () => {
+    vi.mocked(readAIProviderConfig).mockResolvedValue({ backend: 'vercel-ai-sdk' } as Awaited<ReturnType<typeof readAIProviderConfig>>)
+    const vercel = makeProvider('vercel-ai')
+    const router = new GenerateRouter(vercel, null, null)
 
     // Without override, reads config — agentSdk is null so falls back to vercel
     const provider = await router.resolve()
@@ -150,7 +170,7 @@ describe('GenerateRouter', () => {
   it('should resolve override claude-code as alias for agent-sdk', async () => {
     const vercel = makeProvider('vercel-ai')
     const agentSdk = makeProvider('agent-sdk')
-    const router = new GenerateRouter(vercel, agentSdk)
+    const router = new GenerateRouter(vercel, null, agentSdk)
 
     const provider = await router.resolve('claude-code')
     expect(provider).toBe(agentSdk)
@@ -159,15 +179,16 @@ describe('GenerateRouter', () => {
   it('should resolve override agent-sdk when available', async () => {
     const vercel = makeProvider('vercel-ai')
     const agentSdk = makeProvider('agent-sdk')
-    const router = new GenerateRouter(vercel, agentSdk)
+    const router = new GenerateRouter(vercel, null, agentSdk)
 
     const provider = await router.resolve('agent-sdk')
     expect(provider).toBe(agentSdk)
   })
 
   it('should fallback to vercel when override claude-code but not available', async () => {
+    vi.mocked(readAIProviderConfig).mockResolvedValue({ backend: 'vercel-ai-sdk' } as Awaited<ReturnType<typeof readAIProviderConfig>>)
     const vercel = makeProvider('vercel-ai')
-    const router = new GenerateRouter(vercel, null)
+    const router = new GenerateRouter(vercel, null, null)
 
     // Override requests claude-code but it's null — falls through to config read
     const provider = await router.resolve('claude-code')
@@ -178,15 +199,16 @@ describe('GenerateRouter', () => {
   it('should resolve override vercel-ai-sdk directly', async () => {
     const vercel = makeProvider('vercel-ai')
     const cc = makeProvider('claude-code')
-    const router = new GenerateRouter(vercel, cc)
+    const router = new GenerateRouter(vercel, null, cc)
 
     const provider = await router.resolve('vercel-ai-sdk')
     expect(provider).toBe(vercel)
   })
 
   it('should delegate ask to resolved provider', async () => {
+    vi.mocked(readAIProviderConfig).mockResolvedValue({ backend: 'vercel-ai-sdk' } as Awaited<ReturnType<typeof readAIProviderConfig>>)
     const vercel = makeProvider('vercel-ai')
-    const router = new GenerateRouter(vercel, null)
+    const router = new GenerateRouter(vercel, null, null)
 
     const result = await router.ask('test prompt')
     expect(result.text).toBe('from-vercel-ai')

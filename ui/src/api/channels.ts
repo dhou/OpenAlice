@@ -5,7 +5,7 @@ export interface ChannelListItem {
   id: string
   label: string
   systemPrompt?: string
-  provider?: 'claude-code' | 'vercel-ai-sdk' | 'agent-sdk'
+  provider?: 'claude-code' | 'vercel-ai-sdk' | 'codex-cli' | 'agent-sdk'
   vercelAiSdk?: VercelAiSdkOverride
   agentSdk?: AgentSdkOverride
   disabledTools?: string[]

@@ -17,6 +17,7 @@ import { TelegramConnector, splitMessage, MAX_MESSAGE_LENGTH } from './telegram-
 const BACKEND_LABELS: Record<AIBackend, string> = {
   'claude-code': 'Claude Code',
   'vercel-ai-sdk': 'Vercel AI SDK',
+  'codex-cli': 'Codex CLI',
   'agent-sdk': 'Agent SDK',
 }
 
@@ -110,10 +111,12 @@ export class TelegramPlugin implements Plugin {
 
           // Edit the original settings message in-place
           const ccLabel = backend === 'claude-code' ? '> Claude Code' : 'Claude Code'
+          const codexLabel = backend === 'codex-cli' ? '> Codex CLI' : 'Codex CLI'
           const aiLabel = backend === 'vercel-ai-sdk' ? '> Vercel AI SDK' : 'Vercel AI SDK'
           const sdkLabel = backend === 'agent-sdk' ? '> Agent SDK' : 'Agent SDK'
           const keyboard = new InlineKeyboard()
             .text(ccLabel, 'provider:claude-code')
+            .text(codexLabel, 'provider:codex-cli')
             .text(aiLabel, 'provider:vercel-ai-sdk')
             .text(sdkLabel, 'provider:agent-sdk')
           await ctx.editMessageText(
@@ -290,11 +293,13 @@ export class TelegramPlugin implements Plugin {
   private async sendSettingsMenu(chatId: number) {
     const aiConfig = await readAIBackend()
     const ccLabel = aiConfig.backend === 'claude-code' ? '> Claude Code' : 'Claude Code'
+    const codexLabel = aiConfig.backend === 'codex-cli' ? '> Codex CLI' : 'Codex CLI'
     const aiLabel = aiConfig.backend === 'vercel-ai-sdk' ? '> Vercel AI SDK' : 'Vercel AI SDK'
     const sdkLabel = aiConfig.backend === 'agent-sdk' ? '> Agent SDK' : 'Agent SDK'
 
     const keyboard = new InlineKeyboard()
       .text(ccLabel, 'provider:claude-code')
+      .text(codexLabel, 'provider:codex-cli')
       .text(aiLabel, 'provider:vercel-ai-sdk')
       .text(sdkLabel, 'provider:agent-sdk')
 
