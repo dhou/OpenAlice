@@ -16,7 +16,7 @@ const engineSchema = z.object({
 const loginMethodSchema = z.enum(['api-key', 'claudeai'])
 
 export const aiProviderSchema = z.object({
-  backend: z.enum(['claude-code', 'vercel-ai-sdk', 'agent-sdk']).default('claude-code'),
+  backend: z.enum(['claude-code', 'vercel-ai-sdk', 'codex-cli', 'agent-sdk']).default('claude-code'),
   provider: z.string().default('anthropic'),
   model: z.string().default('claude-sonnet-4-6'),
   baseUrl: z.string().min(1).optional(),
@@ -52,6 +52,11 @@ const agentSchema = z.object({
     ],
     maxTurns: 20,
   }),
+  codexCli: z.object({
+    model: z.string().optional(),
+    profile: z.string().optional(),
+    sandbox: z.enum(['read-only', 'workspace-write', 'danger-full-access']).optional(),
+  }).default({}),
 })
 
 const cryptoSchema = z.object({
@@ -192,7 +197,7 @@ export const webSubchannelSchema = z.object({
   /** System prompt override for this channel. */
   systemPrompt: z.string().optional(),
   /** AI backend override. Falls back to global config if omitted. */
-  provider: z.enum(['claude-code', 'vercel-ai-sdk', 'agent-sdk']).optional(),
+  provider: z.enum(['claude-code', 'vercel-ai-sdk', 'codex-cli', 'agent-sdk']).optional(),
   /** Vercel AI SDK model override. Only used when provider is 'vercel-ai-sdk'. */
   vercelAiSdk: vercelAiSdkOverrideSchema.optional(),
   /** Agent SDK model override. Only used when provider is 'agent-sdk'. */
@@ -435,7 +440,7 @@ export async function readToolsConfig() {
 
 // ==================== AI Backend Helpers ====================
 
-export type AIBackend = 'claude-code' | 'vercel-ai-sdk' | 'agent-sdk'
+export type AIBackend = 'claude-code' | 'vercel-ai-sdk' | 'codex-cli' | 'agent-sdk'
 
 /** Read the current AI backend from ai-provider-manager.json. */
 export async function readAIBackend(): Promise<{ backend: AIBackend }> {

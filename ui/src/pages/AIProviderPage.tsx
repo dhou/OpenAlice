@@ -50,17 +50,19 @@ function detectCustomMode(provider: string, model: string): boolean {
 }
 
 /** UI-level backend. 'openai' is a facade over vercel-ai-sdk with provider=openai. */
-type UIBackend = 'agent-sdk' | 'openai' | 'vercel-ai-sdk'
+type UIBackend = 'agent-sdk' | 'openai' | 'vercel-ai-sdk' | 'codex-cli'
 
 /** Default provider/model per UI backend — applied on every switch to avoid stale config. */
-const BACKEND_DEFAULTS: Record<UIBackend, { backend: string; provider: string; model: string }> = {
+const BACKEND_DEFAULTS: Record<UIBackend, { backend: string; provider?: string; model?: string }> = {
   'agent-sdk':    { backend: 'agent-sdk',    provider: 'anthropic', model: 'claude-sonnet-4-6' },
   'openai':       { backend: 'vercel-ai-sdk', provider: 'openai',   model: PROVIDER_MODELS.openai[0].value },
   'vercel-ai-sdk': { backend: 'vercel-ai-sdk', provider: 'anthropic', model: PROVIDER_MODELS.anthropic[0].value },
+  'codex-cli':    { backend: 'codex-cli' },
 }
 
 /** Derive initial UI backend from config. */
 function detectUIBackend(config: AIProviderConfig): UIBackend {
+  if (config.backend === 'codex-cli') return 'codex-cli'
   if (config.backend === 'vercel-ai-sdk' && config.provider === 'openai') return 'openai'
   if (config.backend === 'vercel-ai-sdk') return 'vercel-ai-sdk'
   return 'agent-sdk'
@@ -124,7 +126,14 @@ export function AIProviderPage() {
           <div className="max-w-[880px] mx-auto">
             {/* Backend */}
             <ConfigSection title="Backend" description="Changes take effect immediately.">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                <BackendCard
+                  selected={uiBackend === 'codex-cli'}
+                  onClick={() => handleBackendSwitch('codex-cli')}
+                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8 9l-4 3 4 3" /><path d="M16 9l4 3-4 3" /><path d="M14 5l-4 14" /></svg>}
+                  title="Codex CLI"
+                  description="Local Codex CLI workflow with full tool access"
+                />
                 <BackendCard
                   selected={uiBackend === 'agent-sdk'}
                   onClick={() => handleBackendSwitch('agent-sdk')}

@@ -88,6 +88,12 @@ describe('readAIProviderConfig', () => {
     expect(cfg.provider).toBe('anthropic')   // default
     expect(cfg.model).toBe('claude-sonnet-4-6') // default
   })
+
+  it('accepts codex-cli backend from file', async () => {
+    fileReturns({ backend: 'codex-cli' })
+    const cfg = await readAIProviderConfig()
+    expect(cfg.backend).toBe('codex-cli')
+  })
 })
 
 // ==================== readAIBackend ====================
@@ -272,7 +278,7 @@ describe('writeAccountsConfig', () => {
 
 describe('aiProviderSchema', () => {
   it('accepts valid backends', () => {
-    for (const backend of ['claude-code', 'vercel-ai-sdk', 'agent-sdk'] as const) {
+    for (const backend of ['claude-code', 'vercel-ai-sdk', 'agent-sdk', 'codex-cli'] as const) {
       expect(() => aiProviderSchema.parse({ backend })).not.toThrow()
     }
   })
