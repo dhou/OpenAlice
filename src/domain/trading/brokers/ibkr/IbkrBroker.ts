@@ -97,6 +97,9 @@ export class IbkrBroker implements IBroker {
   }
 
   async getContractDetails(query: Contract): Promise<ContractDetails | null> {
+    if (!query.exchange) query.exchange = 'SMART'
+    if (!query.currency) query.currency = 'USD'
+
     const reqId = this.bridge.allocReqId()
     const promise = this.bridge.requestCollector<ContractDetails>(reqId)
     this.client.reqContractDetails(reqId, query)
@@ -107,6 +110,14 @@ export class IbkrBroker implements IBroker {
   // ==================== Trading operations ====================
 
   async placeOrder(contract: Contract, order: Order): Promise<PlaceOrderResult> {
+    // TWS requires exchange and currency on the contract. Upstream layers
+    // (staging, AI tools) typically only populate symbol + secType.
+    // Default to SMART routing. Currency defaults to USD — non-USD markets
+    // (LSE/GBP, TSE/JPY) and forex (CASH secType) will need the caller
+    // to specify currency explicitly.
+    if (!contract.exchange) contract.exchange = 'SMART'
+    if (!contract.currency) contract.currency = 'USD'
+
     try {
       const orderId = this.bridge.getNextOrderId()
       const promise = this.bridge.requestOrder(orderId)
@@ -233,6 +244,9 @@ export class IbkrBroker implements IBroker {
   }
 
   async getQuote(contract: Contract): Promise<Quote> {
+    if (!contract.exchange) contract.exchange = 'SMART'
+    if (!contract.currency) contract.currency = 'USD'
+
     const reqId = this.bridge.allocReqId()
     const promise = this.bridge.requestSnapshot(reqId)
     this.client.reqMktData(reqId, contract, '', true, false, [])
