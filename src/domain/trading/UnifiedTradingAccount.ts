@@ -251,15 +251,16 @@ export class UnifiedTradingAccount {
       throw new BrokerError('CONFIG', `Account "${this.label}" is disabled due to configuration error: ${this._lastError}`)
     }
     if (this.health === 'offline' && this._recovering) {
-      throw new Error(`Account "${this.label}" is offline and reconnecting. Try again shortly.`)
+      throw new BrokerError('NETWORK', `Account "${this.label}" is offline and reconnecting. Try again shortly.`)
     }
     try {
       const result = await fn()
       this._onSuccess()
       return result
     } catch (err) {
-      this._onFailure(err)
-      throw err
+      const brokerErr = BrokerError.from(err)
+      this._onFailure(brokerErr)
+      throw brokerErr
     }
   }
 

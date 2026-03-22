@@ -262,40 +262,48 @@ export class AlpacaBroker implements IBroker {
   // ---- Queries ----
 
   async getAccount(): Promise<AccountInfo> {
-    const [account, positions] = await Promise.all([
-      this.client.getAccount() as Promise<AlpacaBrokerRaw>,
-      this.client.getPositions() as Promise<AlpacaPositionRaw[]>,
-    ])
+    try {
+      const [account, positions] = await Promise.all([
+        this.client.getAccount() as Promise<AlpacaBrokerRaw>,
+        this.client.getPositions() as Promise<AlpacaPositionRaw[]>,
+      ])
 
-    // Alpaca account API doesn't provide unrealizedPnL — aggregate from positions with Decimal
-    const unrealizedPnL = positions.reduce(
-      (sum, p) => sum.plus(new Decimal(p.unrealized_pl)),
-      new Decimal(0),
-    ).toNumber()
+      // Alpaca account API doesn't provide unrealizedPnL — aggregate from positions with Decimal
+      const unrealizedPnL = positions.reduce(
+        (sum, p) => sum.plus(new Decimal(p.unrealized_pl)),
+        new Decimal(0),
+      ).toNumber()
 
-    return {
-      netLiquidation: parseFloat(account.equity),
-      totalCashValue: parseFloat(account.cash),
-      unrealizedPnL,
-      buyingPower: parseFloat(account.buying_power),
-      dayTradesRemaining: account.daytrade_count != null ? Math.max(0, 3 - account.daytrade_count) : undefined,
+      return {
+        netLiquidation: parseFloat(account.equity),
+        totalCashValue: parseFloat(account.cash),
+        unrealizedPnL,
+        buyingPower: parseFloat(account.buying_power),
+        dayTradesRemaining: account.daytrade_count != null ? Math.max(0, 3 - account.daytrade_count) : undefined,
+      }
+    } catch (err) {
+      throw BrokerError.from(err)
     }
   }
 
   async getPositions(): Promise<Position[]> {
-    const raw = await this.client.getPositions() as AlpacaPositionRaw[]
+    try {
+      const raw = await this.client.getPositions() as AlpacaPositionRaw[]
 
-    return raw.map(p => ({
-      contract: makeContract(p.symbol),
-      side: p.side === 'long' ? 'long' as const : 'short' as const,
-      quantity: new Decimal(p.qty),
-      avgCost: parseFloat(p.avg_entry_price),
-      marketPrice: parseFloat(p.current_price),
-      marketValue: Math.abs(parseFloat(p.market_value)),
-      unrealizedPnL: parseFloat(p.unrealized_pl),
-      realizedPnL: 0,
-      leverage: 1,
-    }))
+      return raw.map(p => ({
+        contract: makeContract(p.symbol),
+        side: p.side === 'long' ? 'long' as const : 'short' as const,
+        quantity: new Decimal(p.qty),
+        avgCost: parseFloat(p.avg_entry_price),
+        marketPrice: parseFloat(p.current_price),
+        marketValue: Math.abs(parseFloat(p.market_value)),
+        unrealizedPnL: parseFloat(p.unrealized_pl),
+        realizedPnL: 0,
+        leverage: 1,
+      }))
+    } catch (err) {
+      throw BrokerError.from(err)
+    }
   }
 
   async getOrders(orderIds: string[]): Promise<OpenOrder[]> {
@@ -318,17 +326,21 @@ export class AlpacaBroker implements IBroker {
 
   async getQuote(contract: Contract): Promise<Quote> {
     const symbol = resolveSymbol(contract)
-    if (!symbol) throw new Error('Cannot resolve contract to Alpaca symbol')
+    if (!symbol) throw new BrokerError('EXCHANGE', 'Cannot resolve contract to Alpaca symbol')
 
-    const snapshot = await this.client.getSnapshot(symbol) as AlpacaSnapshotRaw
+    try {
+      const snapshot = await this.client.getSnapshot(symbol) as AlpacaSnapshotRaw
 
-    return {
-      contract: makeContract(symbol),
-      last: snapshot.LatestTrade.Price,
-      bid: snapshot.LatestQuote.BidPrice,
-      ask: snapshot.LatestQuote.AskPrice,
-      volume: snapshot.DailyBar.Volume,
-      timestamp: new Date(snapshot.LatestTrade.Timestamp),
+      return {
+        contract: makeContract(symbol),
+        last: snapshot.LatestTrade.Price,
+        bid: snapshot.LatestQuote.BidPrice,
+        ask: snapshot.LatestQuote.AskPrice,
+        volume: snapshot.DailyBar.Volume,
+        timestamp: new Date(snapshot.LatestTrade.Timestamp),
+      }
+    } catch (err) {
+      throw BrokerError.from(err)
     }
   }
 
@@ -342,12 +354,16 @@ export class AlpacaBroker implements IBroker {
   }
 
   async getMarketClock(): Promise<MarketClock> {
-    const clock = await this.client.getClock() as AlpacaClockRaw
-    return {
-      isOpen: clock.is_open,
-      nextOpen: new Date(clock.next_open),
-      nextClose: new Date(clock.next_close),
-      timestamp: new Date(clock.timestamp),
+    try {
+      const clock = await this.client.getClock() as AlpacaClockRaw
+      return {
+        isOpen: clock.is_open,
+        nextOpen: new Date(clock.next_open),
+        nextClose: new Date(clock.next_close),
+        timestamp: new Date(clock.timestamp),
+      }
+    } catch (err) {
+      throw BrokerError.from(err)
     }
   }
 
