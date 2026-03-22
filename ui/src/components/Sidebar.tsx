@@ -191,8 +191,8 @@ function pathToPage(pathname: string): Page | null {
   return null
 }
 
-/** Gradient style for active indicator */
-const INDICATOR_GRADIENT = { background: 'linear-gradient(180deg, #58a6ff 0%, #a78bfa 100%)' }
+/** Style for active indicator */
+const INDICATOR_STYLE = { background: '#58a6ff' }
 
 // ==================== Sidebar ====================
 
@@ -257,7 +257,7 @@ export function Sidebar({ sseConnected, open, onClose }: SidebarProps) {
                         className={`absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full transition-all duration-200 ${
                           isActive ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
                         }`}
-                        style={INDICATOR_GRADIENT}
+                        style={INDICATOR_STYLE}
                       />
                       <span className="flex items-center justify-center w-5 h-5">{item.icon(isActive)}</span>
                       {item.label}

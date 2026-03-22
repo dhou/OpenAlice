@@ -34,11 +34,11 @@ body,
 /* ==================== Button utility classes ==================== */
 
 .btn-primary {
-  @apply px-4 py-2 text-[13px] font-medium rounded-lg text-white
-    hover:brightness-110 transition-all active:scale-[0.98]
+  @apply px-4 py-2 text-[13px] font-medium rounded-lg
+    bg-bg-tertiary border border-border text-text
+    hover:border-accent/40 hover:bg-bg-tertiary/80 transition-all active:scale-[0.98]
     disabled:opacity-40 disabled:cursor-default cursor-pointer
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
-  background: linear-gradient(135deg, #58a6ff 0%, #a78bfa 100%);
 }
 
 .btn-secondary {
@@ -56,11 +56,11 @@ body,
 }
 
 .btn-primary-sm {
-  @apply px-3 py-1.5 text-xs font-medium rounded-md text-white
-    hover:brightness-110 transition-all active:scale-[0.98]
+  @apply px-3 py-1.5 text-xs font-medium rounded-md
+    bg-bg-tertiary border border-border text-text
+    hover:border-accent/40 hover:bg-bg-tertiary/80 transition-all active:scale-[0.98]
     disabled:opacity-40 disabled:cursor-default cursor-pointer
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 focus-visible:ring-offset-1 focus-visible:ring-offset-bg;
-  background: linear-gradient(135deg, #58a6ff 0%, #a78bfa 100%);
 }
 
 .btn-secondary-sm {
